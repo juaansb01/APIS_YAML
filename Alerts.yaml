@@ -1,0 +1,1352 @@
+openapi: 3.0.1
+info:
+  title: Information
+  version: 0.2.0
+  description: 'API designed to retrieve information about patient alerts. Alerts can include visualisation of falls, locations and mobility.'
+  contact:
+    name: Alejandro Paule Pereda
+    email: Apaulep@axpe.com
+servers:
+  - url: '{server}/{basePath}/{MajorVersion}'
+    variables:
+      server:
+        description: 'Host, protocol and port. It refers to the point where the API is deployed.'
+        default: 'http://localhost:3000'
+      basePath:
+        description: API's own basePath through which API resources can be consumed.
+        default: alerts
+      MajorVersion:
+        description: Field specifying the major version of the exposed API.
+        default: v0
+tags:
+  - name: Falls
+    description: Methods related to operations related to the management of pacients falls of the Alzheimer's Module.
+  - name: Locations
+    description: Methods related to operations related to the management of pacients locations of the Alzheimer's Module.
+  - name: Movements
+    description: Methods related to operations related to the management of pacients movements of the Alzheimer's Module.
+  - name: Diagnosis
+    description: Methods related to operations related to the management of pacients diagnosis of the Alzheimer's Module.
+paths:
+  /falls:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      parameters:
+        - name: pageNumber
+          description: Indicates the page number on which it is located.
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 1
+            format: int32
+        - name: patientId
+          description: Parameter used to filter falls by the patient.
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: Identifier of the patient.
+            format: int64
+            minimum: 1
+        - name: state
+          description: Parameter used to filter falls by state.
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Falls state.
+            enum:
+              - CONFIRMADO
+              - RECHAZADO
+              - PENDIENTE
+      tags:
+        - Falls
+      operationId: getFalls
+      summary: List of falls
+      description: Get the list of all falls of a patient.
+      responses:
+        '200':
+          $ref: '#/components/responses/200AllFalls'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  '/falls/{fallId}':
+    parameters:
+      - name: fallId
+        description: Id of the fall.
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+          description: 'Fall ID, used to uniquely identify a patient fall of the Alzheimers module.'
+          minimum: 1
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    put:
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+      tags:
+        - Falls
+      summary: Update state from a fall.
+      description: Update a fall.
+      operationId: putFall
+      requestBody:
+        $ref: '#/components/requestBodies/FallBody'
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+  /locations:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      parameters:
+        - name: pageNumber
+          description: Indicates the page number on which it is located.
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 1
+            format: int32
+        - name: patientId
+          description: Parameter used to filter locations by the patient.
+          in: query
+          required: false
+          schema:
+            type: integer
+            description: Identifier of the patient.
+            format: int64
+            minimum: 1
+        - name: sinceDate
+          description: Parameter used to filter locations by date. This is the day on which the query is made and is used to display the most recent locations.
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Location's date of recording.
+            format: date
+            example: '2021-01-30'
+      tags:
+        - Locations
+      operationId: getLocations
+      summary: List of Locations
+      description: Get the list of all locations of a patient.
+      responses:
+        '200':
+          $ref: '#/components/responses/200AllLocations'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  /movements:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      parameters:
+        - name: pageNumber
+          description: Indicates the page number on which it is located.
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 1
+            format: int32
+        - name: patientId
+          description: Parameter used to filter movements by the patient.
+          in: query
+          required: true
+          schema:
+            type: integer
+            description: Identifier of the patient.
+            format: int64
+            minimum: 1
+      tags:
+        - Movements
+      operationId: getMovements
+      summary: List of movements
+      description: Get the list of all movements of a patient.
+      responses:
+        '200':
+          $ref: '#/components/responses/200AllMovements'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  /discordant-diagnosis:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      parameters:
+        - name: pageNumber
+          description: Indicates the page number on which it is located.
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 1
+            format: int32
+      tags:
+        - Diagnosis
+      operationId: getDiscordantDiagnosis
+      summary: List of discordant diagnosis
+      description: Get the list of all diagnosis made by a doctor that aren't the same as the IA decision.
+      responses:
+        '200':
+          $ref: '#/components/responses/200AllDiscordantDiagnosis'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+      tags:
+        - Diagnosis
+      summary: Create a new discordant diagnosis
+      operationId: postDiscordantDiagnosis
+      description: Create a new discordant diagnosis.
+      requestBody:
+        $ref: '#/components/requestBodies/DiscordantDiagnosisBody'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  schemas:
+    Movement:
+      type: object
+      title: Movement
+      description: Object used to represent a patient movement session.
+      allOf:
+        - $ref: '#/components/schemas/PatientId'
+      properties:
+        movementId:
+          type: integer
+          format: int32
+          description: 'Movement ID, used to uniquely identify a patient movement of the Alzheimers module.'
+          minimum: 1
+        duration:
+          type: integer
+          description: Duration of the patient movement recording session in ms.
+          format: int64
+          minimum: 1
+        date:
+          type: string
+          description: Movement's date of recording.
+          format: date
+          example: '2021-01-30'
+        state:
+          type: string
+          description: Movement's current state by IA.
+          enum:
+            - LEVE
+            - MODERADO
+            - GRAVE
+      required:
+        - movementId
+        - duration
+        - date
+        - state
+    MovementResponse:
+      title: MovementResponse
+      type: object
+      description: Object used to represent the response structure of the movement list.
+      properties:
+        data:
+          description: List of movements of a patient.
+          type: array
+          items:
+            $ref: '#/components/schemas/Movement'
+          maxItems: 50
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+    FallId:
+      title: FallId
+      type: object
+      description: Object used to represent a fall id in Alzheimer's Module.
+      properties:
+        fallId:
+          type: integer
+          format: int32
+          description: 'Fall ID, used to uniquely identify a patient fall of the Alzheimers module.'
+          minimum: 1
+      required:
+        - fallId
+    Fall:
+      title: Fall
+      type: object
+      description: Object used to represent a patient fall.
+      anyOf:
+        - $ref: '#/components/schemas/FallGeneral'
+        - $ref: '#/components/schemas/FallPatient'
+    FallGeneral:
+      title: FallGeneral
+      type: object
+      description: Object used to represent a patient fall in the general list.
+      allOf:
+        - $ref: '#/components/schemas/FallGeneralObject'
+        - $ref: '#/components/schemas/FallId'
+    FallPatient:
+      title: FallPatient
+      type: object
+      description: Object used to represent a patient fall in the patient list.
+      allOf:
+        - $ref: '#/components/schemas/FallPatientObject'
+        - $ref: '#/components/schemas/FallId'
+    FallGeneralObject:
+      title: FallGeneralObject
+      type: object
+      description: Object used to represent a patient fall in the general list.
+      properties:
+        time:
+          type: string
+          description: Time in which the patient's fall occurs.
+          pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]h$'
+          example: '15:50h'
+        patient:
+          $ref: '#/components/schemas/Patient'
+        state:
+          type: string
+          description: Patient's current disease.
+          enum:
+            - LEVE
+            - MODERADO
+            - GRAVE
+      required:
+        - time
+        - patient
+        - state
+    FallPatientObject:
+      title: FallPatientObject
+      type: object
+      description: Object used to represent a patient fall in the patient list.
+      properties:
+        address:
+          type: string
+          description: Address line where the fall occures.
+          minLength: 1
+          maxLength: 70
+        date:
+          type: string
+          description: Fall's date of recording.
+          format: date
+          example: '2021-01-30'
+        time:
+          type: string
+          description: Time in which the patient's fall occurs.
+          pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]h$'
+          example: '15:50h'
+        place:
+          type: string
+          description: Place where the fall occurred.
+          enum:
+            - FUERA
+            - DOMICILIO
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        state:
+          type: string
+          description: Falls state.
+          enum:
+            - CONFIRMADO
+            - RECHAZADO
+            - PENDIENTE
+      required:
+        - date
+        - time
+        - place
+        - coordinates
+        - state
+        - address
+    FallResponse:
+      title: FallResponse
+      type: object
+      description: Object used to represent the response structure of the fall list.
+      properties:
+        data:
+          description: List of falls of a patient.
+          type: array
+          items:
+            $ref: '#/components/schemas/Fall'
+          maxItems: 50
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+    Location:
+      title: Location
+      type: object
+      description: Object used to present a place where a patient has been.
+      anyOf:
+        - $ref: '#/components/schemas/LocationGeneral'
+        - $ref: '#/components/schemas/LocationPatient'
+    LocationPatient:
+      type: object
+      title: LocationPatient
+      description: Object used to present a place where a patient has been.
+      properties:
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        locationId:
+          type: integer
+          format: int32
+          description: 'Location ID, used to uniquely identify a patient location of the Alzheimers module.'
+          minimum: 1
+        date:
+          type: string
+          description: Location's date of recording.
+          format: date
+          example: '2021-01-30'
+        type:
+          type: string
+          description: Location's type.
+          enum:
+            - MAÑANA
+            - NOCHE
+            - TARDE
+        period:
+          type: string
+          description: Period of time the patient has been at the location.
+          pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]-([01]?[0-9]|2[0-3]):[0-5][0-9]$'
+          example: '13:23-15:00'
+        conclusion:
+          type: string
+          description: Conclusion of the patient's location.
+          minLength: 1
+          maxLength: 100
+      required:
+        - coordinates
+        - date
+        - period
+        - locationId
+    LocationGeneral:
+      type: object
+      title: LocationGeneral
+      description: Object used to present a place where a patient has been.
+      properties:
+        locationId:
+          type: integer
+          format: int32
+          description: 'Location ID, used to uniquely identify a patient location of the Alzheimers module.'
+          minimum: 1
+        hasFalls:
+          type: boolean
+          description: Property used to define if the location has falls during the record.
+        patient:
+          $ref: '#/components/schemas/Patient'      
+      required:
+        - locationId
+        - patient
+        - hasFalls
+    LocationResponse:
+      title: LocationResponse
+      type: object
+      additionalProperties: false
+      description: Object used to represent the response structure of the location list.
+      properties:
+        data:
+          description: List of locations of a patient.
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+          maxItems: 50
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+    DiscordantDiagnosisId:
+      title: DiscordantDiagnosisId
+      type: object
+      description: Object used to represent a patient id in Alzheimer's Module.
+      properties:
+        diagnosisId:
+          type: integer
+          format: int32
+          description: 'Diagnosis ID, used to uniquely identify a diagnosis of the Alzheimer''s module.'
+          minimum: 1
+      required:
+        - diagnosisId
+    DiscordantDiagnosisObject:
+      title: DiscordantDiagnosisObject
+      type: object
+      description: Object used to represent a diagnosis made on a patient by a doctor.
+      properties:
+        state:
+          type: string
+          description: Patient's current disease.
+          enum:
+            - LEVE
+            - MODERADO
+            - GRAVE
+        patient:
+          $ref: '#/components/schemas/Patient'
+      required:
+        - state
+    DiscordantDiagnosisObjectPost:
+      title: DiscordantDiagnosisObjectPost
+      type: object
+      description: Object used to represent a diagnosis made on a patient by a doctor.
+      properties:
+        stateId:
+          type: integer
+          format: int32
+          description: 'State ID, used to uniquely identify a disease state of the Alzheimer''s module.'
+          minimum: 1
+        patientId:
+          type: integer
+          format: int64
+          description: 'Patient ID, used to uniquely identify a patient of the Alzheimer''s module.'
+          minimum: 1
+        date:
+          type: string
+          description: Diagnosis' date.
+          format: date
+          example: '2021-01-30'
+        isAlert:
+          type: boolean
+          description: Patient's current disease.
+      required:
+        - stateId
+        - patientId
+        - date
+        - isAlert
+    DiscordantDiagnosis:
+      title: DiscordantDiagnosis
+      type: object
+      description: Object used to represent a patient fall.
+      allOf:
+        - $ref: '#/components/schemas/DiscordantDiagnosisObject'
+        - $ref: '#/components/schemas/DiscordantDiagnosisId'
+    Patient:
+      title: Patient
+      type: object
+      description: Object used to represent the patient information needed in the discordant diagnosis list.
+      allOf:
+        - $ref: '#/components/schemas/PatientId'
+      properties:
+        name:
+          type: string
+          description: Patient's name.
+          minLength: 1
+          maxLength: 30
+        lastName:
+          type: string
+          description: Patient's first surname.
+          minLength: 1
+          maxLength: 30
+        picture:
+          type: string
+          description: Url to the profile patient photo.
+          pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+          minLength: 1
+        residenceType:
+          type: string
+          description: Type of residence in which the patient is accommodated.
+          enum:
+            - DOMICILIO
+            - CENTRO
+      required:
+        - name
+        - lastName
+        - picture
+        - residenceType
+    DiscordantDiagnosisResponse:
+      title: DiscordantDiagnosisResponse
+      type: object
+      additionalProperties: false
+      description: Object used to represent the response structure of the discordant diagnosis list.
+      properties:
+        data:
+          description: List of locations of a patient.
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscordantDiagnosis'
+          maxItems: 50
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+    Coordinates:
+      type: object
+      title: Coordinates
+      additionalProperties: false
+      description: Object used to represent the coordinates of a location.
+      properties:
+        latitude:
+          type: integer
+          format: float
+          description: Latitude of the patient's residence.
+        length:
+          type: integer
+          format: float
+          description: Length of the patient's residence.
+      required:
+        - latitude
+        - length
+    PatientId:
+      title: PatientId
+      type: object
+      description: Object used to represent a patient id in Alzheimer's Module.
+      properties:
+        patientId:
+          type: integer
+          format: int64
+          description: 'Patient ID, used to uniquely identify a patient of the Alzheimer''s module.'
+          minimum: 1
+      required:
+        - patientId
+    ErrorMessage:
+      title: ErrorMessage
+      type: object
+      description: Object returned when an error happens.
+      properties:
+        messages:
+          type: array
+          maxItems: 5
+          description: List of error messages.
+          items:
+            type: object
+            description: Information of the error produced.
+            properties:
+              code:
+                type: string
+                description: Field which briefly defines the problem.
+                minLength: 1
+              message:
+                type: string
+                description: Message which describes the main issue.
+                minLength: 1
+              type:
+                type: string
+                description: Describes the type of message displayed. CRITICAL- error that prevents the operation of the entire application. FATAL - error that prevents the operation of a specific functionality. ERROR - error that does not affect more features. WARNING - application works but a warning has been generated. INFO - operative info message.
+                minLength: 1
+                enum:
+                  - CRITICAL
+                  - FATAL
+                  - ERROR
+                  - WARNING
+                  - INFO
+              description:
+                type: string
+                description: Describes other details of the error.
+            required:
+              - code
+              - message
+              - type
+    Pagination:
+      title: Pagination
+      type: object
+      description: Object which contains the pagination data in a Get method.
+      properties:
+        pageSize:
+          description: 'Number of records returned per page. If specified on entry, it will be the value of the query, otherwise it will be the default value set by the service.'
+          type: integer
+          format: int64
+          default: 4
+          maximum: 50
+        pageNumber:
+          description: Page number where we are.
+          type: integer
+          format: int64
+          maximum: 50
+          default: 1
+        totalPages:
+          description: Number of pages for the indicated limit.
+          type: integer
+          format: int64
+          maximum: 50
+          example: 5
+        totalElements:
+          description: Total number of elements in the list.
+          type: integer
+          format: int64
+          example: 40
+        links:
+          description: List of navigation links to different pages.
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              description: Absolute Uri to the page itself that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=2&pageSize=8'
+            first:
+              description: Absolute Uri to the first page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  example: 'http://example-url/patients?pageNumber=0&pageSize=8'
+            last:
+              description: Absolute Uri to the last page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=5&pageSize=8'
+            prev:
+              description: Absolute Uri to the previous page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=1&pageSize=8'
+            next:
+              description: Absolute Uri to the next page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=3&pageSize=8'
+      required:
+        - pageNumber
+        - pageSize
+        - links
+  requestBodies:
+    DiscordantDiagnosisBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DiscordantDiagnosisObjectPost'
+          example:
+            date: '2021-01-30'
+            stateId: 2
+            patientId: 1
+            isAlert: true
+    FallBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FallPatientObject'
+          example:
+            date: '2021-01-30'
+            time: '15:50h'
+            place: FUERA
+            coordinates:
+              latitude: 45700000000000000
+              length: 457000
+            patientId: 1
+            address: 3973 Chandrick Corner
+            state: RECHAZADO
+  headers:
+    X-Request-ID:
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+      required: true
+    Content-Type:
+      description: Header indicating the content of the body provided in the request.
+      schema:
+        type: string
+        pattern: ^application\/json$
+        example: application/json
+      required: true
+    Location:
+      description: Header providing information about the url where the new object has been created.
+      schema:
+        type: string
+        pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+        maxLength: 200
+        example: 'http://example-url/diagnosis/2345523'
+  parameters:
+    X-Request-ID:
+      name: X-Request-ID
+      in: header
+      required: true
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+    Content-Type:
+      name: Content-Type
+      in: header
+      required: true
+      description: Header indicating the content of the body provided in the request.
+      schema:
+        type: string
+        pattern: ^application\/json$
+        example: application/json
+    AcceptLanguageHeader:
+      name: Accept-Language
+      description: ISO code of the language that the client accepts in response from the server.
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z]{2}-[A-Z]{2}$'
+        minLength: 1
+        example: en-EN
+  responses:
+    '201':
+      description: Created.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Location:
+          $ref: '#/components/headers/Location'
+    '204':
+      description: No content.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+    '400':
+      description: Bad Request.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            example-error400InvalidParameters:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Invalid Parameter
+                    type: ERROR
+                    description: A parameter has not been provided correctly.
+            example-error400MandatoryParameterMissing:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Mandatory Parameter Mising
+                    type: ERROR
+                    description: A required parameter has not been provided.
+    '401':
+      description: Unauthorized.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNAUTHORIZED
+                message: Unauthorized
+                type: ERROR
+                description: Failure to present credentials correctly.
+    '403':
+      description: Forbidden.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: FORBIDDEN
+                message: No permission
+                type: ERROR
+                description: You do not have the necessary permissions to access the resource.
+    '404':
+      description: Not found.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: NOT_FOUND
+                message: Not found
+                type: ERROR
+                description: The selected resource has not been found.
+    '405':
+      description: Method Not Allowed.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: METHOD_NOT_ALLOWED
+                message: Method not allowed
+                type: ERROR
+                description: The selected method is not supported by this resource.
+    '415':
+      description: Unsupported Media Type.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNSUPPORTED_MEDIA_TYPE
+                message: Unsupported Media Type
+                type: ERROR
+                description: The body provided is not in the correct format.
+    '422':
+      description: Unprocessable Content.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNPROCESSABLE_ENTITY
+                message: Unprocessable Content
+                type: ERROR
+                description: Entity unprocessable by the server.
+    '429':
+      description: Too Many Requests.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: TOO_MANY_REQUEST
+                message: Too Many Requests
+                type: ERROR
+                description: You have exceeded the maximum number of requests defined.
+    '500':
+      description: Internal Server Error.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                type: ERROR
+                description: Internal system error.
+    200AllFalls:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FallResponse'
+          examples:
+            example-PatientFallsList:
+              value:
+                data:
+                  - fallId: 1
+                    date: '2021-01-30'
+                    duration: 54265235
+                    time: '15:50h'
+                    place: FUERA
+                    coordinates:
+                      latitude: 45700000000000000
+                      length: 457000
+                    patientId: 1
+                    address: 3973 Chandrick Corner
+                    state: RECHAZADO
+                  - fallId: 2
+                    date: '2021-02-02'
+                    duration: 2352653
+                    time: '13:15h'
+                    place: DOMICILIO
+                    coordinates:
+                      latitude: 1245700000000000000
+                      length: 7545700000000000000
+                    patientId: 1
+                    address: 3973 Chandrick Corner
+                    state: CONFIRMADO
+                pagination:
+                  pageSize: 4
+                  pageNumber: 2
+                  totalPages: 5
+                  totalElements: 20
+                  links:
+                    self:
+                      href: 'http://example-url/falls?pageNumber=2&pageSize=4'
+                    first:
+                      href: 'http://example-url/falls?pageNumber=1&pageSize=4'
+                    last:
+                      href: 'http://example-url/falls?pageNumber=5&pageSize=4'
+                    prev:
+                      href: 'http://example-url/falls?pageNumber=1&pageSize=4'
+                    next:
+                      href: 'http://example-url/falls?pageNumber=3&pageSize=4'
+            example-GeneralFallsList:
+              value:
+                data:
+                  - fallId: 1
+                    time: '15:50h'
+                    patient:
+                      name: Ángela
+                      lastName: Casquero Garzó
+                      picture: 'http://drive/angela/picture'
+                      residenceType: DOMICILIO
+                      patientId: 1
+                    state: LEVE
+                  - fallId: 2
+                    time: '12:28h'
+                    patient:
+                      picture: 'http://drive/amelia/picture'
+                      name: Amelia
+                      lastName: Hessel Weissnat
+                      residenceType: DOMICILIO
+                      patientId: 1
+                    state: LEVE
+                pagination:
+                  pageSize: 4
+                  pageNumber: 2
+                  totalPages: 5
+                  totalElements: 20
+                  links:
+                    self:
+                      href: 'http://example-url/falls?pageNumber=2&pageSize=4'
+                    first:
+                      href: 'http://example-url/falls?pageNumber=1&pageSize=4'
+                    last:
+                      href: 'http://example-url/falls?pageNumber=5&pageSize=4'
+                    prev:
+                      href: 'http://example-url/falls?pageNumber=1&pageSize=4'
+                    next:
+                      href: 'http://example-url/falls?pageNumber=3&pageSize=4'
+    200AllLocations:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LocationResponse'
+          examples:
+            example-PatientLocationsList:
+              value:
+                data:
+                  - coordinates:
+                      latitude: 1245700000000000000
+                      length: 7545700000000000000
+                    locationId: 1
+                    date: '2021-01-30'
+                    period: '13:23-15:00'
+                    patientId: 1
+                  - coordinates:
+                      latitude: 1245700000000000000
+                      length: 7545700000000000000
+                    locationId: 2
+                    date: '2021-01-30'
+                    period: '13:23-15:00'
+                    patientId: 1
+                pagination:
+                  pageSize: 4
+                  pageNumber: 2
+                  totalPages: 5
+                  totalElements: 20
+                  links:
+                    self:
+                      href: 'http://example-url/locations?pageNumber=2&pageSize=4'
+                    first:
+                      href: 'http://example-url/locations?pageNumber=1&pageSize=4'
+                    last:
+                      href: 'http://example-url/locations?pageNumber=5&pageSize=4'
+                    prev:
+                      href: 'http://example-url/locations?pageNumber=1&pageSize=4'
+                    next:
+                      href: 'http://example-url/locations?pageNumber=3&pageSize=4'
+            example-GeneralLocationsList:
+              value:
+                data:
+                  - locationId: 1
+                    hasFalls: true
+                    patient:
+                      name: Ángela
+                      lastName: Casquero Garzó
+                      picture: 'http://drive/angela/picture'
+                      residenceType: DOMICILIO
+                      patientId: 1
+                  - locationId: 2
+                    hasFalls: true
+                    patient:
+                      name: Ángela
+                      lastName: Casquero Garzó
+                      picture: 'http://drive/angela/picture'
+                      residenceType: DOMICILIO
+                      patientId: 1
+                pagination:
+                  pageSize: 4
+                  pageNumber: 2
+                  totalPages: 5
+                  totalElements: 20
+                  links:
+                    self:
+                      href: 'http://example-url/locations?pageNumber=2&pageSize=4'
+                    first:
+                      href: 'http://example-url/locations?pageNumber=1&pageSize=4'
+                    last:
+                      href: 'http://example-url/locations?pageNumber=5&pageSize=4'
+                    prev:
+                      href: 'http://example-url/locations?pageNumber=1&pageSize=4'
+                    next:
+                      href: 'http://example-url/locations?pageNumber=3&pageSize=4'  
+    200AllMovements:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MovementResponse'
+          example:
+            data:
+              - movementId: 1
+                duration: 2365223
+                date: '2021-01-30'
+                state: LEVE
+                patientId: 1
+              - movementId: 2
+                duration: 45875
+                date: '2021-02-01'
+                state: LEVE
+                patientId: 1
+            pagination:
+              pageSize: 8
+              pageNumber: 1
+              totalPages: 25
+              totalElements: 539
+              links:
+                self:
+                  href: 'http://example-url/movements?pageNumber=1&pageSize=8'
+                first:
+                  href: 'http://example-url/movements?pageNumber=1&pageSize=8'
+                last:
+                  href: 'http://example-url/movements?pageNumber=25&pageSize=8'
+                prev:
+                  href: 'http://example-url/movements?pageNumber=1&pageSize=8'
+                next:
+                  href: 'http://example-url/movements?pageNumber=2&pageSize=8'
+    200AllDiscordantDiagnosis:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DiscordantDiagnosisResponse'
+          example:
+            data:
+              - state: GRAVE
+                diagnosisId: 1
+                patient:
+                  name: Ángela
+                  lastName: Casquero Garzó
+                  picture: 'http://drive/angela/picture'
+                  residenceType: DOMICILIO
+                  patientId: 1
+              - state: LEVE
+                diagnosisId: 2
+                patient:
+                  name: Álvaro
+                  lastName: Gil Ríos
+                  picture: 'http://drive/alvaro/picture'
+                  residenceType: CENTRO
+                  patientId: 1
+              - state: MODERADO
+                diagnosisId: 3
+                patient:
+                  name: Óscar
+                  lastName: Hilario Pérez
+                  picture: 'http://drive/oscar/picture'
+                  residenceType: CENTRO
+                  patientId: 1
+              - state: LEVE
+                diagnosisId: 4
+                patient:
+                  name: Pablo
+                  lastName: Nicolas Miranda
+                  picture: 'http://drive/pablo/picture'
+                  residenceType: DOMICILIO
+                  patientId: 1
+              - state: GRAVE
+                diagnosisId: 5
+                patient:
+                  name: Ángela
+                  lastName: Casquero Garzó
+                  picture: 'http://drive/angela/picture'
+                  residenceType: DOMICILIO
+                  patientId: 1
+              - state: LEVE
+                diagnosisId: 6
+                patient:
+                  name: Álvaro
+                  lastName: Gil Ríos
+                  picture: 'http://drive/alvaro/picture'
+                  residenceType: CENTRO
+                  patientId: 1
+              - state: MODERADO
+                diagnosisId: 7
+                patient:
+                  name: Óscar
+                  lastName: Hilario Pérez
+                  picture: 'http://drive/oscar/picture'
+                  residenceType: CENTRO
+                  patientId: 1
+              - state: LEVE
+                diagnosisId: 8
+                patient:
+                  name: Pablo
+                  lastName: Nicolas Miranda
+                  picture: 'http://drive/pablo/picture'
+                  residenceType: DOMICILIO
+                  patientId: 1
+            pagination:
+              pageSize: 13
+              pageNumber: 1
+              totalPages: 10
+              totalElements: 115
+              links:
+                self:
+                  href: 'http://example-url/discordant-diagnosis?pageNumber=1&pageSize=13'
+                first:
+                  href: 'http://example-url/discordant-diagnosis?pageNumber=1&pageSize=13'
+                last:
+                  href: 'http://example-url/discordant-diagnosis?pageNumber=10&pageSize=13'
+                prev:
+                  href: 'http://example-url/discordant-diagnosis?pageNumber=1&pageSize=13'
+                next:
+                  href: 'http://example-url/discordant-diagnosis?pageNumber=2&pageSize=13'

@@ -1,0 +1,598 @@
+openapi: 3.0.1
+info:
+  title: Users
+  version: 0.2.0
+  description: 'The API allows to manipulate the users of the Alzheimer''s module. It offers the option for a user to view and modify their data, as well as for an administrator user to manage the characteristics of the rest of the users, being able to create new users, update them, delete them and modify their roles.'
+  contact:
+    name: Alejandro Paule Pereda
+    email: Apaulep@axpe.com
+servers:
+  - url: '{server}/{basePath}/{MajorVersion}'
+    variables:
+      server:
+        description: 'Host, protocol and port. It refers to the point where the API is deployed.'
+        default: 'http://localhost:3000'
+      basePath:
+        description: API's own basePath through which API resources can be consumed.
+        default: users
+      MajorVersion:
+        description: Field specifying the major version of the exposed API.
+        default: v0
+tags:
+  - name: User
+    description: Methods related to operations related to the management of users of the Alzheimer's Module.
+paths:
+  /users:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      tags:
+        - User
+      operationId: getUsers
+      summary: List of users
+      description: Get the list of all users registered in the Alzheimer's Module or users filtered by user role. This can only be done by an administrator user.
+      parameters:
+        - name: pageNumber
+          description: Indicates the page number on which it is located.
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10
+            default: 0
+            format: int32
+        - name: pageSize
+          description: 'Number of records returned per page. If specified on entry, it will be the value of the query, otherwise it will be the default value set by the service.'
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 25
+            default: 8
+            format: int32
+        - name: rol
+          in: query
+          required: false
+          description: Parameter used to filter users by role in Alzheimer Module.
+          schema:
+            type: string
+            description: User's rol in the Alzheimer's module. This defines the actions that a user can perform in the application.
+            enum:
+              - ADMIN
+              - DOCTOR
+      responses:
+        '200':
+          $ref: '#/components/responses/200GetUsers'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  '/users/{userId}':
+    parameters:
+      - in: path
+        name: userId
+        description: 'User ID, used to uniquely identify a user of the Alzheimers module.'
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      tags:
+        - User
+      summary: Get user detail
+      operationId: getUsersUserId
+      description: 'Get all the information about a registered user in the Alzheimer''s Module. This can be done by an administrator user and by the user who owns the information, i.e. each user who is not an administrator can only see his own information.'
+      responses:
+        '200':
+          $ref: '#/components/responses/200GetUsersUserId'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      description: 'Object used to represent an user in Alzheimer''s Module. A user contains basic information about a user and also information specific to this module, such as the user type. Each user type has its own information.'
+      allOf:
+        - $ref: '#/components/schemas/Doctor'
+    UserId:
+      type: object
+      title: UserId
+      description: Object used to represent a user id in Alzheimer's Module.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: 'User ID, used to uniquely identify a user of the Alzheimer''s module.'
+          minimum: 1
+      required:
+        - id
+    BasicUserObject:
+      title: BasicUserObject
+      description: Object to define the common characteristics of all users in Alzheimer's Module.
+      type: object
+      properties:
+        name:
+          type: string
+          description: User's name.
+          minLength: 1
+          maxLength: 30
+        lastName:
+          type: string
+          description: User's surnames.
+          minLength: 1
+          maxLength: 60
+        email:
+          type: string
+          description: User's contact email.
+          format: email
+          pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+          maxLength: 30
+      required:
+        - name
+        - lastName
+    Doctor:
+      title: Doctor
+      type: object
+      description: Object used to represent a doctor.
+      allOf:
+        - $ref: '#/components/schemas/DoctorObject'
+        - $ref: '#/components/schemas/UserId'
+    DoctorObject:
+      title: DoctorObject
+      type: object
+      description: Object used to define the characteristics of all doctors in Alzheimer Module.
+      allOf:
+        - $ref: '#/components/schemas/BasicUserObject'
+      properties:
+        specialisation:
+          type: string
+          description: Health technical speciality possessed by the doctor.
+          enum:
+            - NEUROLOGY
+            - PSYCHOLOGY
+            - GERIATRICS
+            - OTHERS
+        medicalCentre:
+          $ref: '#/components/schemas/MedicalCentre'
+        phoneNumber:
+          type: string
+          description: User's telephone number.
+          pattern: '(?:\+[0-9]{2,3})?[ -]*(6|7|9)[ -]*([0-9][ |-]*){8}'
+          maxLength: 18
+        medicalUnit:
+          description: Medical unit to which the doctor belongs.
+          type: string
+          minLength: 1
+          maxLength: 30
+        nationalIdentityCard:
+          type: string
+          description: Patient's National identity card.
+          pattern: '^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$'
+      required:
+        - specialisation
+        - phoneNumber
+        - medicalCentre
+        - medicalUnit
+    UserData:
+      title: UserData
+      type: object
+      description: 'Object used to represent an user in Alzheimer''s Module. A user contains basic information about a user and also information specific to this module, such as the user type. Each user type has its own information.'
+      properties:
+        data:
+          $ref: '#/components/schemas/User'
+    UserResponse:
+      title: UserResponse
+      type: object
+      description: 'Object used to represent an user in Alzheimer''s Module. A user contains basic information about a user and also information specific to this module, such as the user type. Each user type has its own information.'
+      properties:
+        data:
+          description: List of users stored and registered in the Alzheimer's Module database.
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+          maxItems: 25
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    MedicalCentre:
+      title: MedicalCentre
+      type: object
+      description: Object used to represent the medical centre to which the user doctor belongs.
+      properties:
+        name:
+          type: string
+          description: Medical Centre's name.
+          minLength: 1
+          maxLength: 60
+        address:
+          type: string
+          description: Address street.
+          minLength: 1
+          maxLength: 70
+      required:
+        - name
+        - address
+    Pagination:
+      title: Pagination
+      type: object
+      description: Object which contains the pagination data in a Get method.
+      properties:
+        pageSize:
+          description: 'Number of records returned per page. If specified on entry, it will be the value of the query, otherwise it will be the default value set by the service.'
+          type: integer
+          format: int64
+          maximum: 25
+          example: 10
+        pageNumber:
+          description: Page number where we are.
+          type: integer
+          format: int64
+          maximum: 10
+          example: 2
+        totalPages:
+          description: Number of pages for the indicated limit.
+          type: integer
+          format: int64
+          maximum: 10
+          example: 5
+        totalElements:
+          description: Total number of elements in the list.
+          type: integer
+          format: int64
+          example: 50
+        links:
+          description: List of navigation links to different pages.
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              description: Absolute Uri to the page itself that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/resource?pageNumber=2&pageSize=10'
+            first:
+              description: Absolute Uri to the first page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  example: 'http://example-url/resource?pageNumber=0&pageSize=10'
+            last:
+              description: Absolute Uri to the last page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/resource?pageNumber=5&pageSize=10'
+            prev:
+              description: Absolute Uri to the previous page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/resource?pageNumber=1&pageSize=10'
+            next:
+              description: Absolute Uri to the next page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/resource?pageNumber=3&pageSize=10'
+      required:
+        - pageSize
+        - links
+    ErrorMessage:
+      title: ErrorMessage
+      type: object
+      description: Object returned when an error happens.
+      properties:
+        messages:
+          type: array
+          maxItems: 5
+          description: List of error messages.
+          items:
+            type: object
+            description: Information of the error produced.
+            properties:
+              code:
+                type: string
+                description: Field which briefly defines the problem.
+                minLength: 1
+              message:
+                type: string
+                description: Message which describes the main issue.
+                minLength: 1
+              type:
+                type: string
+                description: Describes the type of message displayed. CRITICAL- error that prevents the operation of the entire application. FATAL - error that prevents the operation of a specific functionality. ERROR - error that does not affect more features. WARNING - application works but a warning has been generated. INFO - operative info message.
+                minLength: 1
+                enum:
+                  - CRITICAL
+                  - FATAL
+                  - ERROR
+                  - WARNING
+                  - INFO
+              description:
+                type: string
+                description: Describes other details of the error.
+            required:
+              - code
+              - message
+              - type
+  headers:
+    X-Request-ID:
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+    Content-Type:
+      description: Header indicating the content of the body provided in the request.
+      schema:
+        type: string
+        pattern: ^application\/json$
+        example: application/json
+  parameters:
+    X-Request-ID:
+      name: X-Request-ID
+      in: header
+      required: true
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+    AcceptLanguageHeader:
+      name: Accept-Language
+      description: ISO code of the language that the client accepts in response from the server.
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z]{2}-[A-Z]{2}$'
+        minLength: 1
+        example: en-EN
+  responses:
+    '400':
+      description: Bad Request.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            example-error400InvalidParameters:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Invalid Parameter
+                    type: ERROR
+                    description: A parameter has not been provided correctly.
+            example-error400MandatoryParameterMissing:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Mandatory Parameter Mising
+                    type: ERROR
+                    description: A required parameter has not been provided.
+    '401':
+      description: Unauthorized.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNAUTHORIZED
+                message: Unauthorized
+                type: ERROR
+                description: Failure to present credentials correctly.
+    '403':
+      description: Forbidden.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: FORBIDDEN
+                message: No permission
+                type: ERROR
+                description: You do not have the necessary permissions to access the resource.
+    '404':
+      description: Not found.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: NOT_FOUND
+                message: Not found
+                type: ERROR
+                description: The selected resource has not been found.
+    '405':
+      description: Method Not Allowed.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: METHOD_NOT_ALLOWED
+                message: Method not allowed
+                type: ERROR
+                description: The selected method is not supported by this resource.
+    '429':
+      description: Too Many Requests.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: TOO_MANY_REQUEST
+                message: Too Many Requests
+                type: ERROR
+                description: You have exceeded the maximum number of requests defined.
+    '500':
+      description: Internal Server Error.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                type: ERROR
+                description: Internal system error.
+    200GetUsers:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserResponse'
+          example:
+            data:
+              - id: 1
+                specialisation: NEUROLOGY
+                medicalCentre:
+                  name: Hospital General Santísima Trinidad
+                  address: Paseo de Carmelitas
+                phoneNumber: '654123456'
+                medicalUnit: Departamento de Neurología
+                nationalIdentityCard: 12345678A
+                name: Juan Alberto
+                lastName: López Sánchez
+                email: juan@doctor.com
+              - id: 2
+                specialisation: NEUROLOGY
+                medicalCentre:
+                  name: Hospital General Santísima Trinidad
+                  address: Paseo de Carmelitas
+                phoneNumber: '654123123'
+                medicalUnit: Departamento de Neurología
+                nationalIdentityCard: 87654321Z
+                name: José
+                lastName: Hernández de Luis
+                email: jose@doctor.com
+            pagination:
+              pageSize: 10
+              pageNumber: 2
+              totalPages: 5
+              totalElements: 50
+              links:
+                self:
+                  href: 'http://example-url/resource?pageNumber=2&pageSize=10'
+                first:
+                  href: 'http://example-url/resource?pageNumber=0&pageSize=10'
+                last:
+                  href: 'http://example-url/resource?pageNumber=5&pageSize=10'
+                prev:
+                  href: 'http://example-url/resource?pageNumber=1&pageSize=10'
+                next:
+                  href: 'http://example-url/resource?pageNumber=3&pageSize=10'
+    200GetUsersUserId:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserData'
+          examples:
+            example-getDoctor:
+              value:
+                data:
+                  id: 2
+                  specialisation: NEUROLOGY
+                  medicalCentre:
+                    name: Hospital General Santísima Trinidad
+                    address: Paseo de Carmelitas
+                  phoneNumber: '654123123'
+                  medicalUnit: Departamento de Neurología
+                  nationalIdentityCard: 87654321Z
+                  name: José
+                  lastName: Hernández de Luis
+                  email: jose@doctor.com

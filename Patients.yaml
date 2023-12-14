@@ -1,0 +1,901 @@
+openapi: 3.0.1
+info:
+  title: Patients
+  version: 0.2.0
+  description: The API allows to manipulate the patients of the Alzheimers module. A doctor has the option to view the information about the patients.
+  contact:
+    name: Alejandro Paule Pereda
+    email: Apaulep@axpe.com
+servers:
+  - url: '{server}/{basePath}/{MajorVersion}'
+    variables:
+      server:
+        description: 'Host, protocol and port. It refers to the point where the API is deployed.'
+        default: 'http://localhost:3000'
+      basePath:
+        description: API's own basePath through which API resources can be consumed.
+        default: patients
+      MajorVersion:
+        description: Field specifying the major version of the exposed API.
+        default: v0
+tags:
+  - name: Patients
+    description: Methods related to operations related to the management of patients of the Alzheimer's Module.
+paths:
+  /patients:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      tags:
+        - Patients
+      operationId: getPatients
+      summary: List of patients
+      description: Get the list of all patients associated to a doctor or patients filtered by residence type or disease state. This can only be done by a doctor.
+      parameters:
+        - name: pageNumber
+          description: Indicates the page number on which it is located.
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10
+            default: 0
+            format: int32
+        - name: pageSize
+          description: 'Number of records returned per page. If specified on entry, it will be the value of the query, otherwise it will be the default value set by the service.'
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 25
+            default: 12
+            format: int32
+        - name: doctorId
+          description: Parameter used to filter patients by the doctor they are associated with. This is required because a doctor can only see patients associated with him/her.
+          in: query
+          required: true
+          schema:
+            type: integer
+            description: Identifier of the doctor the patient is associated with.
+            format: int32
+            minimum: 1
+        - name: state
+          description: 'Parameter used to filter patients by disease status. By default all states are shown, but you can filter by LEVE, MODERADO and GRAVE.'
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Patient's current disease state.
+            default: TODOS
+            enum:
+              - LEVE
+              - MODERADO
+              - GRAVE
+              - TODOS
+        - name: residenceType
+          description: 'Parameter used to filter patients by the type of residence the patient has. By default all types of residence are shown, but you can filter by DOMICILIO or CENTRO.'
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Type of residence in which the patient is accommodated.
+            enum:
+              - DOMICILIO
+              - CENTRO
+        - name: name
+          description: Parameter used to filter patients by name to find a specific patient.
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Patient's name.
+            minLength: 1
+            maxLength: 30
+        - name: surname
+          description: Parameter used to filter patients by surname to find a specific patient.
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Patient's surname.
+            minLength: 1
+            maxLength: 30
+      responses:
+        '200':
+          $ref: '#/components/responses/200AllPatients'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  '/patients/{patientId}':
+    parameters:
+      - in: path
+        name: patientId
+        description: 'Patient ID, used to uniquely identify a patient of the Alzheimers module.'
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      tags:
+        - Patients
+      summary: Get patient detail
+      operationId: getPatientsPatientId
+      description: Get all the information about a patient. This can be done by a doctor
+      responses:
+        '200':
+          $ref: '#/components/responses/200PatientId'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  '/patients/{patientId}/contact':
+    parameters:
+      - in: path
+        name: patientId
+        description: 'Patient ID, used to uniquely identify a patient of the Alzheimers module.'
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/AcceptLanguageHeader'
+    get:
+      tags:
+        - Patients
+      summary: Get patient contact detail
+      operationId: getPatientsPatientIdContact
+      description: Get all the contact information about a patient. This can be done by a doctor
+      responses:
+        '200':
+          $ref: '#/components/responses/200PatientIdContact'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  schemas:
+    Patient:
+      title: Patient
+      type: object
+      description: 'Object used to represent a patient in the Alzheimer''s module, where all possible data that a patient may have is collected.'
+      allOf:
+        - $ref: '#/components/schemas/PatientId'
+        - $ref: '#/components/schemas/PatientObject'
+    PatientId:
+      title: PatientId
+      type: object
+      description: Object used to represent a patient id in Alzheimer's Module.
+      properties:
+        patientId:
+          type: integer
+          format: int64
+          description: 'Patient ID, used to uniquely identify a patient of the Alzheimer''s module.'
+          minimum: 1
+      required:
+        - patientId
+    PatientGeneral:
+      type: object
+      title: PatientGeneral
+      allOf:
+        - $ref: '#/components/schemas/PatientId'
+        - $ref: '#/components/schemas/PatientGeneralObject'
+        - $ref: '#/components/schemas/PatientGeneralExtra'
+      properties:
+        residenceType:
+          type: string
+          description: Type of residence in which the patient is accommodated.
+          enum:
+            - DOMICILIO
+            - CENTRO
+      required:
+        - residenceType
+    PatientObject:
+      title: PatientObject
+      type: object
+      description: Object used to represent a patient without the id in the Alzheimer's module.
+      allOf:
+        - $ref: '#/components/schemas/PatientGeneralObject'
+      properties:
+        controlArea:
+          $ref: '#/components/schemas/ControlArea'
+        registryDate:
+          type: string
+          description: Patient's date of registry.
+          pattern: '^(?:3[01]|[12][0-9]|0?[1-9])([\-/.])(0?[1-9]|1[1-2])\1\d{4}$'
+          example: 22/11/2020
+        stateIA:
+          type: string
+          description: Patient's current disease state by IA.
+          enum:
+            - LEVE
+            - MODERADO
+            - GRAVE
+            - COINCIDENTE
+        stateDoctor:
+          type: string
+          description: Patient's current disease state by doctor.
+          enum:
+            - LEVE
+            - MODERADO
+            - GRAVE
+      required:
+        - controlArea
+        - registryDate
+        - stateIA
+        - stateDoctor
+    PatientContact:
+      title: PatientContact
+      type: object
+      description: Object used to represent a patient contact information.
+      allOf:
+        - $ref: '#/components/schemas/PatientId'
+      properties:
+        email:
+          type: string
+          description: Patient's contact email.
+          format: email
+          pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+          maxLength: 30
+        address:
+          type: string
+          description: Address line where the patient lives.
+          minLength: 1
+          maxLength: 70
+        phoneNumber:
+          type: string
+          description: Medical Centre's telephone number.
+          pattern: '(?:\+[0-9]{2,3})?[ -]*(6|7|9)[ -]*([0-9][ |-]*){8}'
+          maxLength: 18
+        birthDate:
+          type: string
+          description: Patient's date of birth.
+          pattern: '^(?:3[01]|[12][0-9]|0?[1-9])([\-/.])(0?[1-9]|1[1-2])\1\d{4}$'
+          example: 22/11/2020
+        nationalIdentityCard:
+          type: string
+          description: Patient's National identity card.
+          pattern: '^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$'
+          minLength: 1
+        residenceType:
+          type: string
+          description: Type of residence in which the patient is accommodated.
+          enum:
+            - DOMICILIO
+            - CENTRO
+      required:
+        - residenceType
+        - birthDate
+        - phoneNumber
+        - email
+        - address
+    ControlArea:
+      title: ControlArea
+      type: object
+      description: Object used to represent the area of control that the application has of a patient. This object contains the place of residence and the control radius.
+      properties:
+        latitude:
+          type: integer
+          format: float
+          description: Latitude of the patient's residence.
+        length:
+          type: integer
+          format: float
+          description: Length of the patient's residence.
+        controlRadius:
+          type: integer
+          format: int32
+          description: Control radio used to monitor the area around the patient's residence. Unit-m .
+          minimum: 1
+          maximum: 10000
+      required:
+        - latitude
+        - length
+        - controlRadius
+    PatientGeneralObject:
+      type: object
+      title: PatientGeneralObject
+      description: Object used to represent the patient information needed in the list of pacients associated to a doctor.
+      properties:
+        name:
+          type: string
+          description: Patient's name.
+          minLength: 1
+          maxLength: 30
+        firstSurname:
+          type: string
+          description: Patient's first surname.
+          minLength: 1
+          maxLength: 30
+        doctorId:
+          type: integer
+          description: Identifier of the doctor the patient is associated with.
+          format: int32
+          minimum: 1
+        picture:
+          type: string
+          description: Url to the profile patient photo.
+          pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+          minLength: 1
+      required:
+        - name
+        - firstSurname
+        - doctorId
+        - picture
+    PatientGeneralExtra:
+      type: object
+      title: PatientGeneralExtra
+      description: Object used to represent the extra information of a patient. It consists of the average of the diagnoses made by the IA on the patient.
+      properties:
+        stateIA:
+          type: string
+          description: Patient's current disease state by IA.
+          enum:
+            - LEVE
+            - MODERADO
+            - GRAVE
+            - COINCIDENTE
+        stateDoctor:
+          type: string
+          description: Patient's current disease state by doctor.
+          enum:
+            - LEVE
+            - MODERADO
+            - GRAVE
+        falls:
+          type: integer
+          description: Number of patient's falls.
+          format: int32
+          minimum: 0
+          maximum: 100
+        age:
+          type: integer
+          format: int32
+          description: Patient's age.
+          minimum: 1
+          maximum: 150
+      required:
+        - falls
+        - stateDoctor
+        - age
+        - stateIA
+    PatientResponse:
+      type: object
+      title: PatientResponse
+      description: Object used to encapsulate the response structure when a doctor needs to list all the patients associated to.
+      properties:
+        data:
+          description: List of patients stored in the Alzheimer's Module database associated to a doctor.
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientGeneral'
+          maxItems: 100
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    PatientData:
+      type: object
+      title: PatientData
+      description: Object used to encapsulate the response structure when a doctor wants to see all the information about a patient.
+      properties:
+        data:
+          $ref: '#/components/schemas/Patient'
+    PatientContactData:
+      type: object
+      title: PatientContactData
+      description: Object used to encapsulate the response structure when a doctor wants to see all the information about a patient contact information.
+      properties:
+        data:
+          $ref: '#/components/schemas/PatientContact'
+    ErrorMessage:
+      title: ErrorMessage
+      type: object
+      description: Object returned when an error happens.
+      properties:
+        messages:
+          type: array
+          maxItems: 5
+          description: List of error messages.
+          items:
+            type: object
+            description: Information of the error produced.
+            properties:
+              code:
+                type: string
+                description: Field which briefly defines the problem.
+                minLength: 1
+              message:
+                type: string
+                description: Message which describes the main issue.
+                minLength: 1
+              type:
+                type: string
+                description: Describes the type of message displayed. CRITICAL- error that prevents the operation of the entire application. FATAL - error that prevents the operation of a specific functionality. ERROR - error that does not affect more features. WARNING - application works but a warning has been generated. INFO - operative info message.
+                minLength: 1
+                enum:
+                  - CRITICAL
+                  - FATAL
+                  - ERROR
+                  - WARNING
+                  - INFO
+              description:
+                type: string
+                description: Describes other details of the error.
+            required:
+              - code
+              - message
+              - type
+    Pagination:
+      title: Pagination
+      type: object
+      description: Object which contains the pagination data in a Get method.
+      properties:
+        pageSize:
+          description: 'Number of records returned per page. If specified on entry, it will be the value of the query, otherwise it will be the default value set by the service.'
+          type: integer
+          format: int64
+          maximum: 25
+          example: 8
+        pageNumber:
+          description: Page number where we are.
+          type: integer
+          format: int64
+          maximum: 10
+          example: 1
+        totalPages:
+          description: Number of pages for the indicated limit.
+          type: integer
+          format: int64
+          maximum: 10
+          example: 5
+        totalElements:
+          description: Total number of elements in the list.
+          type: integer
+          format: int64
+          example: 40
+        links:
+          description: List of navigation links to different pages.
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              description: Absolute Uri to the page itself that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=2&pageSize=8'
+            first:
+              description: Absolute Uri to the first page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  example: 'http://example-url/patients?pageNumber=0&pageSize=8'
+            last:
+              description: Absolute Uri to the last page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=5&pageSize=8'
+            prev:
+              description: Absolute Uri to the previous page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=1&pageSize=8'
+            next:
+              description: Absolute Uri to the next page that was returned.
+              type: object
+              properties:
+                href:
+                  type: string
+                  pattern: '^http[s]{0,1}://[a-zA-Z./]+'
+                  maxLength: 200
+                  example: 'http://example-url/patients?pageNumber=3&pageSize=8'
+      required:
+        - pageNumber
+        - pageSize
+        - links
+  headers:
+    X-Request-ID:
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+      required: true
+    Content-Type:
+      description: Header indicating the content of the body provided in the request.
+      schema:
+        type: string
+        pattern: ^application\/json$
+        example: application/json
+      required: true
+  parameters:
+    X-Request-ID:
+      name: X-Request-ID
+      in: header
+      required: true
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+    AcceptLanguageHeader:
+      name: Accept-Language
+      description: ISO code of the language that the client accepts in response from the server.
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z]{2}-[A-Z]{2}$'
+        minLength: 1
+        example: en-EN
+  responses:
+    '400':
+      description: Bad Request.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            example-error400InvalidParameters:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Invalid Parameter
+                    type: ERROR
+                    description: A parameter has not been provided correctly.
+            example-error400MandatoryParameterMissing:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Mandatory Parameter Mising
+                    type: ERROR
+                    description: A required parameter has not been provided.
+    '401':
+      description: Unauthorized.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNAUTHORIZED
+                message: Unauthorized
+                type: ERROR
+                description: Failure to present credentials correctly.
+    '403':
+      description: Forbidden.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: FORBIDDEN
+                message: No permission
+                type: ERROR
+                description: You do not have the necessary permissions to access the resource.
+    '404':
+      description: Not found.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: NOT_FOUND
+                message: Not found
+                type: ERROR
+                description: The selected resource has not been found.
+    '405':
+      description: Method Not Allowed.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: METHOD_NOT_ALLOWED
+                message: Method not allowed
+                type: ERROR
+                description: The selected method is not supported by this resource.
+    '429':
+      description: Too Many Requests.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: TOO_MANY_REQUEST
+                message: Too Many Requests
+                type: ERROR
+                description: You have exceeded the maximum number of requests defined.
+    '500':
+      description: Internal Server Error.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                type: ERROR
+                description: Internal system error.
+    200AllPatients:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PatientResponse'
+          example:
+            data:
+              - patientId: 1
+                doctorId: 2
+                picture: 'http://drive/angela/picture'
+                name: Ángela
+                firstSurname: Casquero Garzó
+                age: 62
+                residenceType: CENTRO
+                stateDoctor: GRAVE
+                stateIA: MODERADO
+                falls: 1
+              - patientId: 2
+                doctorId: 2
+                picture: 'http://drive/jessie/picture'
+                name: Jessie
+                firstSurname: Klocko Sipes
+                age: 82
+                residenceType: CENTRO
+                stateDoctor: GRAVE
+                stateIA: MODERADO
+                falls: 3
+              - patientId: 3
+                doctorId: 2
+                picture: 'http://drive/yvonne/picture'
+                name: Yvonne
+                firstSurname: Brown Mante
+                age: 89
+                residenceType: CENTRO
+                stateDoctor: GRAVE
+                stateIA: MODERADO
+                falls: 5
+              - patientId: 4
+                doctorId: 2
+                picture: 'http://drive/amelia/picture'
+                name: Amelia
+                firstSurname: Hessel Weissnat
+                age: 81
+                residenceType: CENTRO
+                stateDoctor: GRAVE
+                stateIA: COINCIDENTE
+                falls: 3
+              - patientId: 5
+                doctorId: 2
+                picture: 'http://drive/gladys/picture'
+                name: Gladys
+                firstSurname: Goyette Abbott
+                age: 79
+                residenceType: DOMICILIO
+                stateDoctor: MODERADO
+                stateIA: COINCIDENTE
+                falls: 1
+              - patientId: 6
+                doctorId: 2
+                picture: 'http://drive/toby/picture'
+                name: Toby
+                firstSurname: McDermott Klocko
+                age: 94
+                residenceType: CENTRO
+                stateDoctor: MODERADO
+                stateIA: GRAVE
+                falls: 1
+              - patientId: 7
+                doctorId: 2
+                picture: 'http://drive/alexis/picture'
+                name: Alexis
+                firstSurname: Barrows Ledner
+                age: 93
+                residenceType: DOMICILIO
+                stateDoctor: MODERADO
+                stateIA: GRAVE
+                falls: 5
+              - patientId: 8
+                doctorId: 2
+                picture: 'http://drive/everett/picture'
+                name: Everett
+                firstSurname: Schultz Greenfelder
+                age: 78
+                residenceType: DOMICILIO
+                stateDoctor: LEVE
+                stateIA: MODERADO
+                falls: 2
+              - patientId: 9
+                doctorId: 2
+                picture: 'http://drive/amelia/picture'
+                name: Amelia
+                firstSurname: Hessel Weissnat
+                age: 76
+                residenceType: DOMICILIO
+                stateDoctor: LEVE
+                stateIA: COINCIDENTE
+                falls: 2
+              - patientId: 10
+                doctorId: 2
+                picture: 'http://drive/amelia/picture'
+                name: Amelia
+                firstSurname: Hessel Weissnat
+                age: 76
+                residenceType: DOMICILIO
+                stateDoctor: LEVE
+                stateIA: MODERADO
+                falls: 2
+              - patientId: 11
+                doctorId: 2
+                picture: 'http://drive/amelia/picture'
+                name: Amelia
+                firstSurname: Hessel Weissnat
+                age: 76
+                residenceType: DOMICILIO
+                stateDoctor: LEVE
+                stateIA: MODERADO
+                falls: 2
+              - patientId: 12
+                doctorId: 2
+                picture: 'http://drive/amelia/picture'
+                name: Amelia
+                firstSurname: Hessel Weissnat
+                age: 76
+                residenceType: DOMICILIO
+                stateDoctor: LEVE
+                stateIA: MODERADO
+                falls: 2
+            pagination:
+              pageSize: 12
+              pageNumber: 1
+              totalPages: 10
+              totalElements: 115
+              links:
+                self:
+                  href: 'http://example-url/patients?pageNumber=1&pageSize=12'
+                first:
+                  href: 'http://example-url/resource?pageNumber=1&pageSize=12'
+                last:
+                  href: 'http://example-url/resource?pageNumber=10&pageSize=12'
+                prev:
+                  href: 'http://example-url/resource?pageNumber=1&pageSize=12'
+                next:
+                  href: 'http://example-url/resource?pageNumber=2&pageSize=12'
+    200PatientId:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PatientData'
+          example:
+            data:
+              patientId: 1
+              controlArea:
+                latitude: 34000
+                length: 45700000000000000
+                controlRadius: 1000
+              registryDate: 22/11/2019
+              name: Ángela
+              firstSurname: Casquero Garzó
+              doctorId: 2
+              picture: 'http://drive/angela/picture'
+              stateIA: MODERADO
+              stateDoctor: GRAVE
+    200PatientIdContact:
+      description: OK
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PatientContactData'
+          example:
+            data:
+              patientId: 1
+              email: angela.casquero@hotmail.com
+              address: 'C/Gran Vía 33, Madrid 28003'
+              phoneNumber: +34 665 414 579
+              birthDate: 26/11/1956
+              nationalIdentityCard: 12345678A
+              residenceType: DOMICILIO

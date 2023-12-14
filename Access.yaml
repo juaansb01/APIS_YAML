@@ -1,0 +1,480 @@
+openapi: 3.0.1
+info:
+  title: Access
+  version: 0.2.0
+  description: 'This API allows you to get access to your user profile, end a sesion or retrieve the password of the Alzheimer application.'
+  contact:
+    name: Alejandro Paule Pereda
+    email: Apaulep@axpe.com
+servers:
+  - url: '{server}/{basePath}/{MajorVersion}'
+    variables:
+      server:
+        description: 'Host, protocol and port. It refers to the point where the API is deployed.'
+        default: 'http://localhost:3000'
+      basePath:
+        description: API's own basePath through which API resources can be consumed.
+        default: access
+      MajorVersion:
+        description: Field specifying the major version of the exposed API.
+        default: v0
+tags:
+  - name: Session
+    description: Methods related to manage a session.
+  - name: Password
+    description: Methods related to retrieve password.
+paths:
+  /login:
+    post:
+      tags:
+        - Session
+      operationId: postLogin
+      summary: Login
+      description: Method to access to your user profile of the Alzhemier application.
+      parameters:
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/AcceptLanguageHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/LoginBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/200Login'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  /logout:
+    post:
+      tags:
+        - Session
+      operationId: postLogout
+      summary: End session
+      description: Method to end a session in the Alzheimer application.
+      parameters:
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/AcceptLanguageHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/LogoutBody'
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+  /retrieve-password:
+    post:
+      tags:
+        - Session
+      operationId: postRetrievePassword
+      summary: Retrieve Password
+      description: Method to retrieve user's password of the Alzhemier application.
+      parameters:
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/AcceptLanguageHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/PasswordBody'
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '405':
+          $ref: '#/components/responses/405'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  schemas:
+    User:
+      title: User
+      description: Object used to represent an user with his password.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Email'
+      properties:
+        password:
+          type: string
+          description: User's password.
+          minLength: 1
+      required:
+        - password
+    Session:
+      title: Session
+      description: Object used to represent an authenticate session.
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: Token used to refresh the session Token.
+    Email:
+      title: Email
+      description: Object used to represent an email.
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          minLength: 1
+          description: User's email. It's used to identificate uniquely an user.
+          format: email
+          pattern: '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+          maxLength: 30
+    LoginResponse:
+      title: LoginResponse
+      description: Response structure of login.
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Token
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        refresh_expires_in:
+          type: integer
+        token_type:
+          type: string
+          default: Bearer
+      example:
+        access_token: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJWR3BmeFRnSUZLTExFcU5JZkJzT21pU2w2SkVfODVHTThtRzZHc196VTNRIn0.eyJleHAiOjE2NzYyODc1NzEsImlhdCI6MTY3NjI4NzI3MSwianRpIjoiNTlmNTc4NmUtY2E2NC00MjZiLTk2NzctNWEzZGYxODA2MWU3IiwiaXNzIjoiaHR0cDovL2VjMi01Mi0xNy00Mi01OS5ldS13ZXN0LTEuY29tcHV0ZS5hbWF6b25hd3MuY29tOjgwOTAvYXV0aC9yZWFsbXMvVGFza01hbmFnZXIiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMjJjMjlhYWMtNmRjNC00Y2JlLTljOGEtYmFjZTdjNGE3MGVhIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYXV0aC1hcHAiLCJzZXNzaW9uX3N0YXRlIjoiMzU0MTNlODAtYjAxNS00ZTY2LThlNmQtYjJkOGEyYTJlY2JiIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImRlZmF1bHQtcm9sZXMtdGFza21hbmFnZXIiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImF1dGgtYXBwIjp7InJvbGVzIjpbImFkbWluIiwidXNlciJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMzU0MTNlODAtYjAxNS00ZTY2LThlNmQtYjJkOGEyYTJlY2JiIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUm9iZXJ0byBCdWVubyIsInByZWZlcnJlZF91c2VybmFtZSI6InJidWVub2wiLCJnaXZlbl9uYW1lIjoiUm9iZXJ0byIsImZhbWlseV9uYW1lIjoiQnVlbm8iLCJlbWFpbCI6InJidWVub2xAYXhwZS5jb20ifQ.k8jNofQKkBEfP_IxEWdN35z_JvseaWyVuMAN_9Cm5jjUBFtSnrBNV4HhgnOSa4yRVH5MTYNiuZhC4hD_Y6wDWk5tcnqqiRbIvOSD550R3a7-PS8kVh9yYIarySlqAY_jkPuCqVf2x2A68NRprHC88xWddYxu2_C2jRWabnOZu4N5eA0LTBEjnZMlxp_EKesUYZ_QBUVfn2qSwOjARoWH1M59Oagk6YqJQrXP5J3_QbzBw0KHyvH-6xWngVAb-Tebr2wb6zxONkNRHg9_9T16RQIWI2Ckp7TywBaXxqWrdC1YCKMl_PDkoa1ISPXaRXfAqwjx-hPxem5ML57y-bv5Jw
+        refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzYWMxN2UyMy1hY2EzLTRiNGMtOWJmMi05NjZkMzE0NGU5YWYifQ.eyJleHAiOjE2NzYyODkwNzEsImlhdCI6MTY3NjI4NzI3MSwianRpIjoiNGNmOTkxN2MtZTNiOC00N2VhLTk0MTctYTM5ZjNmNTA0YTdlIiwiaXNzIjoiaHR0cDovL2VjMi01Mi0xNy00Mi01OS5ldS13ZXN0LTEuY29tcHV0ZS5hbWF6b25hd3MuY29tOjgwOTAvYXV0aC9yZWFsbXMvVGFza01hbmFnZXIiLCJhdWQiOiJodHRwOi8vZWMyLTUyLTE3LTQyLTU5LmV1LXdlc3QtMS5jb21wdXRlLmFtYXpvbmF3cy5jb206ODA5MC9hdXRoL3JlYWxtcy9UYXNrTWFuYWdlciIsInN1YiI6IjIyYzI5YWFjLTZkYzQtNGNiZS05YzhhLWJhY2U3YzRhNzBlYSIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJhdXRoLWFwcCIsInNlc3Npb25fc3RhdGUiOiIzNTQxM2U4MC1iMDE1LTRlNjYtOGU2ZC1iMmQ4YTJhMmVjYmIiLCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJzaWQiOiIzNTQxM2U4MC1iMDE1LTRlNjYtOGU2ZC1iMmQ4YTJhMmVjYmIifQ.ANuvyqmGB-NHqV61-zG6HV0OjC4WjlxBPAx59Dpog5U
+        expires_in: 300
+        refresh_expires_in: 1800
+        token_type: Bearer
+    ErrorMessage:
+      title: ErrorMessage
+      type: object
+      description: Object returned when an error happens.
+      properties:
+        messages:
+          type: array
+          maxItems: 5
+          description: List of error messages.
+          items:
+            type: object
+            description: Information of the error produced.
+            properties:
+              code:
+                type: string
+                description: Field which briefly defines the problem.
+                minLength: 1
+              message:
+                type: string
+                description: Message which describes the main issue.
+                minLength: 1
+              type:
+                type: string
+                description: Describes the type of message displayed. CRITICAL- error that prevents the operation of the entire application. FATAL - error that prevents the operation of a specific functionality. ERROR - error that does not affect more features. WARNING - application works but a warning has been generated. INFO - operative info message.
+                minLength: 1
+                enum:
+                  - CRITICAL
+                  - FATAL
+                  - ERROR
+                  - WARNING
+                  - INFO
+              description:
+                type: string
+                description: Describes other details of the error.
+            required:
+              - code
+              - message
+              - type
+  requestBodies:
+    LoginBody:
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: '#/components/schemas/User'
+          example:
+            email: juan@doctor.com
+            password: juan
+    LogoutBody:
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: '#/components/schemas/Session'
+          example:
+            refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzYWMxN2UyMy1hY2EzLTRiNGMtOWJmMi05NjZkMzE0NGU5YWYifQ.eyJleHAiOjE2NzYyOTI0NzMsImlhdCI6MTY3NjI5MDY3MywianRpIjoiNGRlN2FiZGYtN2RkYS00ODY5LWJjNTItMWNiODgzMTlmNjIwIiwiaXNzIjoiaHR0cDovL2VjMi01Mi0xNy00Mi01OS5ldS13ZXN0LTEuY29tcHV0ZS5hbWF6b25hd3MuY29tOjgwOTAvYXV0aC9yZWFsbXMvVGFza01hbmFnZXIiLCJhdWQiOiJodHRwOi8vZWMyLTUyLTE3LTQyLTU5LmV1LXdlc3QtMS5jb21wdXRlLmFtYXpvbmF3cy5jb206ODA5MC9hdXRoL3JlYWxtcy9UYXNrTWFuYWdlciIsInN1YiI6IjIyYzI5YWFjLTZkYzQtNGNiZS05YzhhLWJhY2U3YzRhNzBlYSIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJhdXRoLWFwcCIsInNlc3Npb25fc3RhdGUiOiJjMGUzNjY4OS05MDVkLTRiNTItYWVhMi0xZDFjMzg5ZmJkMGIiLCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJzaWQiOiJjMGUzNjY4OS05MDVkLTRiNTItYWVhMi0xZDFjMzg5ZmJkMGIifQ.G5A-QlJv74fHpJaiY3gXiPIuBV089YnNybPYK1qCVMI
+    PasswordBody:
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: '#/components/schemas/Email'
+          example:
+            email: juan@doctor.com
+  parameters:
+    X-Request-ID:
+      name: X-Request-ID
+      in: header
+      required: true
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+    Content-Type:
+      name: Content-Type
+      in: header
+      required: true
+      description: Header indicating the content of the body provided in the request.
+      schema:
+        type: string
+        pattern: ^application\/x-www-form-urlencoded$
+        example: application/x-www-form-urlencoded
+    AcceptLanguageHeader:
+      name: Accept-Language
+      description: ISO code of the language that the client accepts in response from the server.
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z]{2}-[A-Z]{2}$'
+        minLength: 1
+        example: en-EN
+  headers:
+    X-Request-ID:
+      description: Header used to control the traceability of requests. It consists of an Id in UUID format.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+        format: uuid
+        example: 54b9c11c-9162-45a1-a352-0d95734cd079
+      required: true
+    Content-Type:
+      description: Header indicating the content of the body provided in the request.
+      schema:
+        type: string
+        pattern: ^application\/json$
+        example: application/json
+      required: true
+  responses:
+    '204':
+      description: No content.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+    '400':
+      description: Bad Request.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            example-error400InvalidParameters:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Invalid Parameter
+                    type: ERROR
+                    description: A parameter has not been provided correctly.
+            example-error400MandatoryParameterMissing:
+              value:
+                messages:
+                  - code: BAD_REQUEST
+                    message: Mandatory Parameter Mising
+                    type: ERROR
+                    description: A required parameter has not been provided.
+    '401':
+      description: Unauthorized.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNAUTHORIZED
+                message: Unauthorized
+                type: ERROR
+                description: Failure to present credentials correctly.
+    '403':
+      description: Forbidden.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: FORBIDDEN
+                message: No permission
+                type: ERROR
+                description: You do not have the necessary permissions to access the resource.
+    '404':
+      description: Not found.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: NOT_FOUND
+                message: Not found
+                type: ERROR
+                description: The selected resource has not been found.
+    '405':
+      description: Method Not Allowed.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: METHOD_NOT_ALLOWED
+                message: Method not allowed
+                type: ERROR
+                description: The selected method is not supported by this resource.
+    '415':
+      description: Unsupported Media Type.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNSUPPORTED_MEDIA_TYPE
+                message: Unsupported Media Type
+                type: ERROR
+                description: The body provided is not in the correct format.
+    '422':
+      description: Unprocessable Content.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: UNPROCESSABLE_ENTITY
+                message: Unprocessable Content
+                type: ERROR
+                description: Entity unprocessable by the server.
+    '429':
+      description: Too Many Requests.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: TOO_MANY_REQUEST
+                message: Too Many Requests
+                type: ERROR
+                description: You have exceeded the maximum number of requests defined.
+    '500':
+      description: Internal Server Error.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          example:
+            messages:
+              - code: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+                type: ERROR
+                description: Internal system error.
+    200Login:
+      description: OK.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginResponse'
+          example:
+            access_token: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJWR3BmeFRnSUZLTExFcU5JZkJzT21pU2w2SkVfODVHTThtRzZHc196VTNRIn0.eyJleHAiOjE2NzYyODc1NzEsImlhdCI6MTY3NjI4NzI3MSwianRpIjoiNTlmNTc4NmUtY2E2NC00MjZiLTk2NzctNWEzZGYxODA2MWU3IiwiaXNzIjoiaHR0cDovL2VjMi01Mi0xNy00Mi01OS5ldS13ZXN0LTEuY29tcHV0ZS5hbWF6b25hd3MuY29tOjgwOTAvYXV0aC9yZWFsbXMvVGFza01hbmFnZXIiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMjJjMjlhYWMtNmRjNC00Y2JlLTljOGEtYmFjZTdjNGE3MGVhIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYXV0aC1hcHAiLCJzZXNzaW9uX3N0YXRlIjoiMzU0MTNlODAtYjAxNS00ZTY2LThlNmQtYjJkOGEyYTJlY2JiIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImRlZmF1bHQtcm9sZXMtdGFza21hbmFnZXIiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImF1dGgtYXBwIjp7InJvbGVzIjpbImFkbWluIiwidXNlciJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMzU0MTNlODAtYjAxNS00ZTY2LThlNmQtYjJkOGEyYTJlY2JiIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUm9iZXJ0byBCdWVubyIsInByZWZlcnJlZF91c2VybmFtZSI6InJidWVub2wiLCJnaXZlbl9uYW1lIjoiUm9iZXJ0byIsImZhbWlseV9uYW1lIjoiQnVlbm8iLCJlbWFpbCI6InJidWVub2xAYXhwZS5jb20ifQ.k8jNofQKkBEfP_IxEWdN35z_JvseaWyVuMAN_9Cm5jjUBFtSnrBNV4HhgnOSa4yRVH5MTYNiuZhC4hD_Y6wDWk5tcnqqiRbIvOSD550R3a7-PS8kVh9yYIarySlqAY_jkPuCqVf2x2A68NRprHC88xWddYxu2_C2jRWabnOZu4N5eA0LTBEjnZMlxp_EKesUYZ_QBUVfn2qSwOjARoWH1M59Oagk6YqJQrXP5J3_QbzBw0KHyvH-6xWngVAb-Tebr2wb6zxONkNRHg9_9T16RQIWI2Ckp7TywBaXxqWrdC1YCKMl_PDkoa1ISPXaRXfAqwjx-hPxem5ML57y-bv5Jw
+            refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzYWMxN2UyMy1hY2EzLTRiNGMtOWJmMi05NjZkMzE0NGU5YWYifQ.eyJleHAiOjE2NzYyODkwNzEsImlhdCI6MTY3NjI4NzI3MSwianRpIjoiNGNmOTkxN2MtZTNiOC00N2VhLTk0MTctYTM5ZjNmNTA0YTdlIiwiaXNzIjoiaHR0cDovL2VjMi01Mi0xNy00Mi01OS5ldS13ZXN0LTEuY29tcHV0ZS5hbWF6b25hd3MuY29tOjgwOTAvYXV0aC9yZWFsbXMvVGFza01hbmFnZXIiLCJhdWQiOiJodHRwOi8vZWMyLTUyLTE3LTQyLTU5LmV1LXdlc3QtMS5jb21wdXRlLmFtYXpvbmF3cy5jb206ODA5MC9hdXRoL3JlYWxtcy9UYXNrTWFuYWdlciIsInN1YiI6IjIyYzI5YWFjLTZkYzQtNGNiZS05YzhhLWJhY2U3YzRhNzBlYSIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJhdXRoLWFwcCIsInNlc3Npb25fc3RhdGUiOiIzNTQxM2U4MC1iMDE1LTRlNjYtOGU2ZC1iMmQ4YTJhMmVjYmIiLCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJzaWQiOiIzNTQxM2U4MC1iMDE1LTRlNjYtOGU2ZC1iMmQ4YTJhMmVjYmIifQ.ANuvyqmGB-NHqV61-zG6HV0OjC4WjlxBPAx59Dpog5U
+            expires_in: 300
+            refresh_expires_in: 1800
+            token_type: Bearer
